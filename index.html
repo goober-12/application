@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Live Chat</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: auto; }
+        #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; }
+        input, button { padding: 10px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<h2>Live Chat</h2>
+
+<div id="login">
+    <input id="username" placeholder="Enter username..." />
+    <button onclick="joinChat()">Join</button>
+</div>
+
+<div id="chat" style="display:none;">
+    <div id="messages"></div>
+    <input id="messageInput" placeholder="Type message..." />
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+let username = "";
+
+// BroadcastChannel lets tabs talk to each other
+const channel = new BroadcastChannel("chat_channel");
+
+function joinChat() {
+    const input = document.getElementById("username");
+    if (!input.value) return alert("Enter a username");
+
+    username = input.value;
+    document.getElementById("login").style.display = "none";
+    document.getElementById("chat").style.display = "block";
+}
+
+function sendMessage() {
+    const input = document.getElementById("messageInput");
+    if (!input.value) return;
+
+    const msg = {
+        user: username,
+        text: input.value,
+        time: new Date().toLocaleTimeString()
+    };
+
+    channel.postMessage(msg);
+    input.value = "";
+}
+
+// Receive messages
+channel.onmessage = (event) => {
+    const msg = event.data;
+
+    const div = document.createElement("div");
+    div.textContent = `[${msg.time}] ${msg.user}: ${msg.text}`;
+
+    document.getElementById("messages").appendChild(div);
+};
+</script>
+
+</body>
+</html>
